@@ -17,7 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+import jsonish.views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
+    path('tz/', include('tzones.urls')),
+    path('500/', jsonish.views.error_500),
 ]
+
+handler400 = 'jsonish.views.error_400'
+handler403 = 'jsonish.views.error_403'
+handler404 = 'jsonish.views.error_404'
+handler500 = 'jsonish.views.error_500'
