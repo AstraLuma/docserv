@@ -4,11 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
 channels = {version = "*", extras = ["daphne"]}
 whitenoise = {version = "*", extras = ["brotli"]}
 django-allauth = "*"
 oso = "*"
+django = {version = "*", extras = ["argon2", "bcrypt"]}
+psycopg = "*"
+msgpack = "*"
+pyyaml = "*"
+tzdata = "*"
 
 [dev-packages]
 
