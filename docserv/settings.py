@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'oso_lite',
 
     'tzones',
+    'pokeberu',
 ]
 
 MIDDLEWARE = [
