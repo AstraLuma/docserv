@@ -5,6 +5,8 @@ from django.utils.http import parse_header_parameters
 
 import json
 
+from junk_drawer.cn import parse_accept
+
 encoders = {
     'application/json': ('json', lambda data: json.dumps(data, cls=DjangoJSONEncoder)),
 }
@@ -52,11 +54,6 @@ def _full_encoders(request, html_template):
     return encoders | {
         'text/html': (None, HtmlSerializer(request, html_template)),
     }
-
-
-def parse_accept(txt):
-    for bit in txt.split(','):
-        yield parse_header_parameters(bit.strip())
 
 
 class DataResponse(HttpResponse):
