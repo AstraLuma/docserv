@@ -39,6 +39,18 @@ class AsyncSSEConsumer(AsyncHttpConsumer):
         """
         return self.scope['headers'].get('Last-Event-ID', None)
 
+    # Private event overrides
+    async def http_request(self, message):
+        """
+        Async entrypoint - concatenates body fragments and hands off control
+        to ``self.connect`` when the body has been completely received.
+        """
+        # This exists because the default one doesn't allow handing off to a background task
+        if "body" in message:
+            self.body.append(message["body"])
+        if not message.get("more_body"):
+            await self.connect(self.body)
+
     # User API
     async def send_headers(self, *, status=200, headers=None):
         if status == 200:
@@ -98,10 +110,37 @@ class AsyncSSEConsumer(AsyncHttpConsumer):
         )
 
     async def send_event_json(self, *, data, **fields):
+        """
+        Same as send_event(), but the data is first JSON-encoded.
+        """
         await self.send_event(data=json.dumps(data), **fields)
+
+    async def ping(self):
+        """
+        Sends empty data to indicate the connection is still live.
+        """
+        await self.send_body(b"\n", more_body=True)
 
     async def terminate(self):
         """
         Kill the connection from the server side.
         """
         await self.send_body(b"", more_body=False)
+
+    # Overridables
+    async def connect(self, body):
+        """
+        Receives the request body as a bytestring. Response may be composed
+        using the ``self.send*`` methods; the return value of this method is
+        thrown away.
+        """
+        raise NotImplementedError(
+            "Subclasses of AsyncSSEConsumer must provide a connect() method."
+        )
+
+    async def disconnect(self):
+        """
+        Overrideable place to run disconnect handling. Do not send anything
+        from here.
+        """
+        pass
