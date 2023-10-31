@@ -1,4 +1,3 @@
-# For Django Channels
 import json
 
 from channels.exceptions import StopConsumer
@@ -6,19 +5,6 @@ from channels.generic.http import AsyncHttpConsumer
 from django.utils.http import parse_header_parameters
 
 from junk_drawer.cn import get_accepts
-
-
-def _get_accepts(scope):
-    for header, value in scope['headers']:
-        if header.lower() == b'accept':
-            for mtype in value.split(b','):
-                mtype = mtype.strip()
-                yield [bit.strip() for bit in mtype.split(b';')]
-
-
-def parse_accept(txt):
-    for bit in txt.split(','):
-        yield parse_header_parameters(bit.strip())
 
 
 class EventsRouter:
@@ -119,20 +105,3 @@ class AsyncSSEConsumer(AsyncHttpConsumer):
         Kill the connection from the server side.
         """
         await self.send_body(b"", more_body=False)
-        await self.disconnect()
-        raise StopConsumer()
-
-    # Overridables
-    async def connect(self):
-        """
-        Called when the SSE is opened
-        """
-        # Default: Just accept the connection
-        await self.accept()
-
-    async def disconnect(self):
-        """
-        Overrideable place to run disconnect handling. Do not send anything
-        from here.
-        """
-        pass
