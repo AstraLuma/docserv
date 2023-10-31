@@ -2,14 +2,14 @@ import asyncio
 from datetime import datetime
 
 from junk_drawer.sse import AsyncSSEConsumer
+from junk_drawer.tasks import TaskGroupMixin
 
 
-class PlainFeed(AsyncSSEConsumer):
-    task = None
+class PlainFeed(TaskGroupMixin, AsyncSSEConsumer):
 
     async def connect(self, body):
         await self.accept()
-        self.task = asyncio.create_task(self._time_loop())
+        self.create_task(self._time_loop())
 
     async def _time_loop(self):
         try:
@@ -18,12 +18,3 @@ class PlainFeed(AsyncSSEConsumer):
                 await asyncio.sleep(1)
         finally:
             await self.terminate()
-
-    async def disconnect(self):
-        print("Disconnect")
-        if self.task is not None:
-            self.task.cancel()
-            try:
-                await self.task
-            except asyncio.CancelledError:
-                pass
